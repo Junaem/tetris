@@ -7,7 +7,7 @@ public class Shape {
 	protected enum Tetrominoe{
 		//각각의 테트로미노들 이름을 선언하는듯.enum은 열거형.https://limkydev.tistory.com/50참조
 		//enum으로 이렇게 가능한 선택지를 열거해놓으면 테트로미노는 String형 전체가 아닌 여기서만 고를 수 있음.
-		NoShape, ZShape, SShape, LineShape,
+		NoShape, SShape, ZShape, LineShape,//원래 거에 s랑 z 쉐잎이 반대로 설정된것같아서 바꿈. 어차피 실행과정에선 노상관일듯.
 		TShape, SquareShape, LShape, MirroredShape
 	}
 	private Tetrominoe pieceShape;
@@ -100,15 +100,6 @@ public class Shape {
 			result.setX(i, -y(i));
 			result.setY(i, x(i));
 		}
+		return result;
 	}
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
 }
