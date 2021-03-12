@@ -41,7 +41,7 @@ public class Board extends JPanel {//JPanel 상속
 	}//snake에서는 getPrefferedSize하고 Dimension으로 한번에 W,H값 입력했는데 다르게함.
 	//화면 전체를 맵으로 쓰지 않아서 그런건가?
 	private int squareHeight() {
-		return (int) getSize().getWidth() / BOARD_HEIGHT;
+		return (int) getSize().getHeight() / BOARD_HEIGHT;
 	}//겟사이즈 겟W,H는 JPANEL에 정의되어 있는건가? 뒤에 왜 /로 나눌까?
 	private Tetrominoe shapeAt(int x, int y) {
 		return board[(y * BOARD_WIDTH) + x];
@@ -120,16 +120,44 @@ public class Board extends JPanel {//JPanel 상속
 			board[i] = Tetrominoe.NoShape;
 		}
 	}
-	private void pieceDropped() {
+	private void pieceDropped() {//피스가 떨어졌을때 그쪽자리에 그려넣는것 같은데 아직 이해불가
 		for(int i=0; i<4; i++) {
-			int x = curX +curPiece.x(i);
-			int y = curY - curPiece.y(i);
-			board[(y*BOARD_WIDTH)+x] = curPiece.getShape();
+			int x = curX +curPiece.x(i);//각 칸(배열{x,y})의 x만큼 현 x에 +
+			int y = curY - curPiece.y(i);//y는 그만큼 현 y에 -
+			board[(y*BOARD_WIDTH)+x] = curPiece.getShape();//그 y에 너비곱하고 x더한걸 board[]안에 넣고. 구부분에 현재피스그림
+		}//위의 보드배열안의 식을 모르겠다.
+		removeFullLines();//다 찬 라인 삭제.
+		
+		if(!isFallingFinished) {//폴링이 안 끝났는데 왜 뉴피스??
+			newPiece();//구현해보고 다시 봐야할듯
 		}
 	}
 	
-	
-	
+	private void newPiece() {
+		curPiece.setRandomShape();
+		curX = BOARD_WIDTH/2+1;
+		curY = BOARD_HEIGHT - 1 + curPiece.minY();
+		
+		if(!tryMove(curPiece, curX, curY)) {//tryMove를 구현하고 나야 뭐가 이해가 될듯
+			//밑에 보니 아마 새거 만들었는데 움직일 수 없는 상황인듯. 즉 겜오버
+			curPiece.setShape(Tetrominoe.NoShape);//이거는 필요한가?
+			timer.stop();
+			var msg = String.format("Game over. Score: %d", numLinesRemoved);		
+		}//%d는 정수를 집어넣는것. 위의 경우에는 numLineR.
+	}
+	private boolean tryMove(Shape newPiece, int newX, int newY) {
+		for(int i=0; i<4; i++) {
+			int x = newX + newPiece.x(i);//newX에 newPiece의 각 칸의 x값을 더한것.
+			int y = newY - newPiece.y(i);
+			
+			if(x<0||x>= BOARD_WIDTH|| y<0 || y>= BOARD_HEIGHT) {
+				return false;//가로로 맵을 나가거나 세로로 맵을 나가거나 하면 false
+			}
+			if(shapeAt(x,y)!= Tetrominoe.NoShape) {
+				return false;//shapeAt 리턴값을 이해를 못하겠어서 이것도...
+			}
+		}
+	}
 	
 	
 	
