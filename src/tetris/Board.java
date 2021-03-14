@@ -157,6 +157,27 @@ public class Board extends JPanel {//JPanel 상속
 				return false;//shapeAt 리턴값을 이해를 못하겠어서 이것도...
 			}
 		}
+		curPiece = new Piece;
+		curX = newX;
+		curY = newY;
+		
+		repaint();
+		
+		return true;
+	}
+	private void removeFullLines() {
+		int numFullLines = 0;
+		
+		for(int i =BOARD+HEIGHT-1; i>=0; i--) {
+			boolean lineIsFull = true;
+			
+			for(int j=0; j< BOARD_WIDTH; j++) {
+				if(shapeAt(j,i)== Tetrominoe.NoShape) {
+					lineIsFull = false;
+					break;
+				}
+			}
+		}
 	}
 	
 	
