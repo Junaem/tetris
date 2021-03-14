@@ -42,7 +42,7 @@ public class Board extends JPanel {//JPanel 상속
 	//화면 전체를 맵으로 쓰지 않아서 그런건가?
 	private int squareHeight() {
 		return (int) getSize().getHeight() / BOARD_HEIGHT;
-	}//겟사이즈 겟W,H는 JPANEL에 정의되어 있는건가? 뒤에 왜 /로 나눌까?
+	}//겟사이즈 겟W,H는 JPANEL에 정의되어 있는건가? 뒤에 왜 /로 나눌까?/@한 칸의 높이로 추정
 	private Tetrominoe shapeAt(int x, int y) {
 		return board[(y * BOARD_WIDTH) + x];
 	}//shape 위치를 구하는 것 같은데 1도 이해불가
@@ -75,7 +75,7 @@ public class Board extends JPanel {//JPanel 상속
 	private void doDrawing(Graphics g) {
 		var size = getSize();//JPanel의 사이즈를 구하는것?
 		int boardTop = (int)size.getHeight() - BOARD_HEIGHT * squareHeight();
-		//보드의 끝을 보드 높이에서 거기에 square높이를 곱한거만큼 뺌. squareH는 한번 보드높이로 나눴었으니 겟H-겟W가 됨.보드탑을 제외한 부분이 한변이 W인 정사각형이 될듯.
+		//보드의 끝을 보드 높이에서 거기에 square높이를 곱한거만큼 뺌. squareH는 겟사이즈/보드h이니 위 식은 size.겟h-getsize.겟h인데 뭔차인지 모르겠음. 이름을 보면 게임판을 뺀 스테이터스 창인거같긴함
 		for(int i=0; i< BOARD_HEIGHT;i++) {//i는 0부터 h까지
 			for(int j=0; j< BOARD_WIDTH; j++) {//j는 w까지
 				Tetrominoe shape = shapeAt(j, BOARD_HEIGHT -i -1);//한칸씩 내리는것 같은데, 이걸 어떻게 timer로 시간에 맞게 구현할까
@@ -126,6 +126,7 @@ public class Board extends JPanel {//JPanel 상속
 			int y = curY - curPiece.y(i);//y는 그만큼 현 y에 -
 			board[(y*BOARD_WIDTH)+x] = curPiece.getShape();//그 y에 너비곱하고 x더한걸 board[]안에 넣고. 구부분에 현재피스그림
 		}//위의 보드배열안의 식을 모르겠다.
+		//@@@보드의 정해진 위치에 현재피스.겟셰잎으로 배열을 가져와서 채움
 		removeFullLines();//다 찬 라인 삭제.
 		
 		if(!isFallingFinished) {//폴링이 안 끝났는데 왜 뉴피스??
@@ -155,7 +156,7 @@ public class Board extends JPanel {//JPanel 상속
 			}
 			if(shapeAt(x,y)!= Tetrominoe.NoShape) {
 				return false;//shapeAt 리턴값을 이해를 못하겠어서 이것도...
-			}
+			}//이게 이미 존재하는 블럭에 충돌하면 못움직이게 하는 식 같은데, 식을 제대로 이해못하겠음. tetrominoe.Noshape은 빈칸인것같은데. 확실하게 이해가 안됨
 		}
 		curPiece = new Piece;
 		curX = newX;
@@ -168,17 +169,56 @@ public class Board extends JPanel {//JPanel 상속
 	private void removeFullLines() {
 		int numFullLines = 0;
 		
-		for(int i =BOARD+HEIGHT-1; i>=0; i--) {
-			boolean lineIsFull = true;
+		for(int i =BOARD_HEIGHT-1; i>=0; i--) {
+			boolean lineIsFull = true;//모든 라인 중,
 			
 			for(int j=0; j< BOARD_WIDTH; j++) {
 				if(shapeAt(j,i)== Tetrominoe.NoShape) {
 					lineIsFull = false;
-					break;
+					break;//노셰잎인 칸이 있으면 라인is풀이 아님. 즉 노셰잎은 빈칸이 맞았음
 				}
 			}
+			
+			if(lineIsFull) {
+				numFullLines++;
+				
+				for(int k =i; k< BOARD_HEIGHT -1; k++) {//방금 삭제한 위의 줄들. k가 y역할, j가 x역할
+					for(int j =0; j<BOARD_WIDTH;j++) {
+						board[(k*BOARD_WIDTH)+j] = shapeAt(j,k+1);
+					}//k+1, 즉 y+1의 위치에 있는것을, 그냥 y로 내림. 즉 한칸씩 내려주는것.
+				}//다 알겠는데 밑에서 위로 훑으면서 진행되는 for문이면 체크해야될 두 줄이 붙어있을때 생략되는일은 없나? 한칸 내리고 다음 줄 체크할건데?
+			}//@@아 다시 읽어보니 k로 하는 for문이 위에서 부터 내려오는 순서여서 두 줄 붙어있어도 체크할것같음.
+		}
+		if(numFullLines>0) {
+			numLinesRemoved += numFullLines;
+			
+			statusbar.setText(String.valueOf(numLinesRemoved));
+			isFallingFinished = true;
+			curPiece.setShape(Tetrominoe.NoShape);//위에건 다 알겠는데 왜 노셰잎으로 만듦? 일단 노셰잎으로 초기화하는것같긴한데 왜 굳이? 그리고 그럼 어떤 식에서 다시 랜덤셰잎가져옴?
 		}
 	}
+	private void drawSquare(Graphic g, int x, int y, Tetrominoe shape) {
+		
+		Color color[] = {new Color(0,0,0), new Color(204, 102, 102),
+				new Color(102, 204, 102), new Color(102, 102, 204),
+				new Color(204, 204, 102), new Color(204, 102, 204),
+				new Color(102, 204, 204), new Color(218, 170, 0)
+		};//8개 테트로미노 셰잎 들 색을 이걸로 할듯. 000은 노셰잎
+		var color = colors[shape.ordinal()];
+		
+		g.setColor(color);
+		g.fillRect(x+1, y+1, squareWidth()-2, squareHeight()-2);//-2는 2픽셀식 빼서 겉에 1픽셀짜리 테두리를 만드는건듯
+		//근데 +1은 도저히 이해불가
+		g.setColor(color.brighter());//밝음으로 하고 밑에 두줄 긋고 어두움으로 아래 두줄 긋는듯.
+		g.drawLine(x, y +squareHeight()-1, x, y);
+		g.drawLine(x,y,x+squareWidth()-1,y);
+		
+		g.setColor(color.darker());
+		g.drawLine(x+1,y+squareHeight()-1,
+				x+squareWidth()-1,y+squareHeight()-1);
+		g.drawLine(x+squareWidth()-1, y+squareHeight()-1,
+				x+squareWidth()-1, y+1);
+	}//주석 추후작성
 	
 	
 	
