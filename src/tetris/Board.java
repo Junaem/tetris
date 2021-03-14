@@ -63,7 +63,7 @@ public class Board extends JPanel {//JPanel 상속
 			statusbar.setText("Paused");//퍼즈를 트루로 만든 후 퍼즈라고 글자띄움.
 		}else {
 			statusbar.setText(String.valueOf(numLinesRemoved));
-		}//퍼즈 중에 누르면 스테이터스바 글자에 지운 줄 수 보여줌. 이후에 따로 statusbar구현 안하나?
+		}//퍼즈 중에 누르면 스테이터스바 글자에 지운 줄 수 보여줌. 이후에 따로 statusbar구현 안할듯
 		repaint();
 	}
 	@Override
@@ -79,21 +79,21 @@ public class Board extends JPanel {//JPanel 상속
 		for(int i=0; i< BOARD_HEIGHT;i++) {//i는 0부터 h까지
 			for(int j=0; j< BOARD_WIDTH; j++) {//j는 w까지
 				Tetrominoe shape = shapeAt(j, BOARD_HEIGHT -i -1);//한칸씩 내리는것 같은데, 이걸 어떻게 timer로 시간에 맞게 구현할까
-				
+				//@@@내리는게 아니고 각 칸을 색칠하는 것ㄴ듯.
 				if(shape != Tetrominoe.NoShape) {//NoShape일때 셰잎 그리는 건데 draw네모를 구현하고 놔야 이해가능할듯.
 					drawSquare(g, j*squareWidth(),
 							boardTop+ i*squareHeight(), shape);
 				}
 			}
 		}
-		if(curPiece.getShape() != Tetrominoe.NoShape) {
+		if(curPiece.getShape() != Tetrominoe.NoShape) {//현재 피스가 노셰잎이 아니면
 			for(int i =0; i<4; i++) {
 				int x = curX + curPiece.x(i);//x는 셰잎클래스 에서 coords4개 배열중 i번째 배열의 x.
 				int y = curY - curPiece.y(i);//배열이 4개니 4번반복 for문
 				
 				drawSquare(g, x*squareWidth(),
 						boardTop+(BOARD_HEIGHT-y-1)*squareHeight,
-						curPiece.getShape());
+						curPiece.getShape());//현재 피스 그림
 			}
 		}
 	}
@@ -108,17 +108,17 @@ public class Board extends JPanel {//JPanel 상속
 			newY--;//이게 Y를 계속 떨어뜨리는 거였음. 위에거 다시 확인 필요.
 		}//그게아니고 쭉 내리는 거인듯.
 		pieceDropped();
-	}
+	}//@@쭉 내리는거 맞음. space키 눌렀을때 쭉 내리는것.
 	
 	private void oneLineDown() {
 		if(!tryMove(curPiece, curX, curY-1)) {
 			pieceDropped();//움직일수 없으면 피스드롭??이해불가
-		}
+		}//@@@한 줄 내렸을때 움직일 수 없으면 드롭된 상태라고 알려주는것. 즉 새 피스를 만들어야되니 현재 피스 상태를 드롭드로 처리
 	}
 	private void clearBoard() {
 		for(int i=0; i<BOARD_HEIGHT*BOARD_WIDTH; i++) {
 			board[i] = Tetrominoe.NoShape;
-		}
+		}//말 그대로 보드의 모든 칸을 노셰잎으로 초기화
 	}
 	private void pieceDropped() {//피스가 떨어졌을때 그쪽자리에 그려넣는것 같은데 아직 이해불가
 		for(int i=0; i<4; i++) {
