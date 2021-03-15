@@ -54,7 +54,7 @@ public class Board extends JPanel {//JPanel 상속
 		newPiece();//둘 다 아직 정의x
 		
 		timer = new Timer(PERIOD_INTERVAL, new GameCycle());//게임사이클 아직 정의x
-		timer.start();)
+		timer.start();
 	}
 	
 	private void pause() {
@@ -85,6 +85,7 @@ public class Board extends JPanel {//JPanel 상속
 							boardTop+ i*squareHeight(), shape);
 				}
 			}
+			
 		}
 		if(curPiece.getShape() != Tetrominoe.NoShape) {//현재 피스가 노셰잎이 아니면
 			for(int i =0; i<4; i++) {
@@ -92,7 +93,7 @@ public class Board extends JPanel {//JPanel 상속
 				int y = curY - curPiece.y(i);//배열이 4개니 4번반복 for문
 				
 				drawSquare(g, x*squareWidth(),
-						boardTop+(BOARD_HEIGHT-y-1)*squareHeight,
+						boardTop+(BOARD_HEIGHT-y-1)*squareHeight(),
 						curPiece.getShape());//현재 피스 그림
 			}
 		}
@@ -160,7 +161,7 @@ public class Board extends JPanel {//JPanel 상속
 				return false;//shapeAt 리턴값을 이해를 못하겠어서 이것도...
 			}//이게 이미 존재하는 블럭에 충돌하면 못움직이게 하는 식 같은데, 식을 제대로 이해못하겠음. tetrominoe.Noshape은 빈칸인것같은데. 확실하게 이해가 안됨
 		}
-		curPiece = new Piece;
+		curPiece = newPiece;
 		curX = newX;
 		curY = newY;
 		
@@ -199,9 +200,9 @@ public class Board extends JPanel {//JPanel 상속
 			curPiece.setShape(Tetrominoe.NoShape);//위에건 다 알겠는데 왜 노셰잎으로 만듦? 일단 노셰잎으로 초기화하는것같긴한데 왜 굳이? 그리고 그럼 어떤 식에서 다시 랜덤셰잎가져옴?
 		}
 	}
-	private void drawSquare(Graphic g, int x, int y, Tetrominoe shape) {
+	private void drawSquare(Graphics g, int x, int y, Tetrominoe shape) {
 		
-		Color color[] = {new Color(0,0,0), new Color(204, 102, 102),
+		Color colors[] = {new Color(0,0,0), new Color(204, 102, 102),
 				new Color(102, 204, 102), new Color(102, 102, 204),
 				new Color(204, 204, 102), new Color(204, 102, 204),
 				new Color(102, 204, 204), new Color(218, 170, 0)
