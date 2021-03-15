@@ -104,7 +104,7 @@ public class Board extends JPanel {//JPanel 상속
 		while (newY>0) {
 			if(!tryMove(curPiece, curX, newY -1)) {
 				break;
-			}//움직일 수 없을때 가지인듯.
+			}//움직일 수 없을때 가지인듯.@@아래로 움직일수 없을때까지
 			newY--;//이게 Y를 계속 떨어뜨리는 거였음. 위에거 다시 확인 필요.
 		}//그게아니고 쭉 내리는 거인듯.
 		pieceDropped();
@@ -113,8 +113,8 @@ public class Board extends JPanel {//JPanel 상속
 	private void oneLineDown() {
 		if(!tryMove(curPiece, curX, curY-1)) {
 			pieceDropped();//움직일수 없으면 피스드롭??이해불가
-		}//@@@한 줄 내렸을때 움직일 수 없으면 드롭된 상태라고 알려주는것. 즉 새 피스를 만들어야되니 현재 피스 상태를 드롭드로 처리
-	}
+		}//@한 줄 내렸을때 움직일 수 없으면 드롭된 상태라고 알려주는것. 즉 새 피스를 만들어야되니 현재 피스 상태를 드롭드로 처리
+	}//@@아님. d키 눌렀을때 실행하는데 위의 dropdown하고 뭐가 다른지 몰겠음.
 	private void clearBoard() {
 		for(int i=0; i<BOARD_HEIGHT*BOARD_WIDTH; i++) {
 			board[i] = Tetrominoe.NoShape;
@@ -127,6 +127,7 @@ public class Board extends JPanel {//JPanel 상속
 			board[(y*BOARD_WIDTH)+x] = curPiece.getShape();//그 y에 너비곱하고 x더한걸 board[]안에 넣고. 구부분에 현재피스그림
 		}//위의 보드배열안의 식을 모르겠다.
 		//@@@보드의 정해진 위치에 현재피스.겟셰잎으로 배열을 가져와서 채움
+		//그런데 for문으로 현재 피스의 각 칸을 가져와 놓고 왜 겟셰잎을 쓰는걸까? 겟 셰잎은 칸이 아니라 하나의 덩어리아닌가?
 		removeFullLines();//다 찬 라인 삭제.
 		
 		if(!isFallingFinished) {//폴링이 안 끝났는데 왜 뉴피스??
@@ -141,6 +142,7 @@ public class Board extends JPanel {//JPanel 상속
 		
 		if(!tryMove(curPiece, curX, curY)) {//tryMove를 구현하고 나야 뭐가 이해가 될듯
 			//밑에 보니 아마 새거 만들었는데 움직일 수 없는 상황인듯. 즉 겜오버
+			//@@새거 만들었는데 움직일 수 없는게 아니라 새거 만드는 최초 칸으로 설정하는게 불가능(다 차있는 상태)할때.
 			curPiece.setShape(Tetrominoe.NoShape);//이거는 필요한가?
 			timer.stop();
 			var msg = String.format("Game over. Score: %d", numLinesRemoved);		
@@ -150,7 +152,7 @@ public class Board extends JPanel {//JPanel 상속
 		for(int i=0; i<4; i++) {
 			int x = newX + newPiece.x(i);//newX에 newPiece의 각 칸의 x값을 더한것.
 			int y = newY - newPiece.y(i);
-			
+			//@@즉 원래 x,y(newPiece.x,y(i))를 입력한newX,Y를 통해 새로운 int x,y로 움직이는것.
 			if(x<0||x>= BOARD_WIDTH|| y<0 || y>= BOARD_HEIGHT) {
 				return false;//가로로 맵을 나가거나 세로로 맵을 나가거나 하면 false
 			}
@@ -170,11 +172,11 @@ public class Board extends JPanel {//JPanel 상속
 		int numFullLines = 0;
 		
 		for(int i =BOARD_HEIGHT-1; i>=0; i--) {
-			boolean lineIsFull = true;//모든 라인 중,
+			boolean lineIsFull = true;//일단 트루로 설정
 			
 			for(int j=0; j< BOARD_WIDTH; j++) {
 				if(shapeAt(j,i)== Tetrominoe.NoShape) {
-					lineIsFull = false;
+					lineIsFull = false;//모든 라인의 가로 칸들중에
 					break;//노셰잎인 칸이 있으면 라인is풀이 아님. 즉 노셰잎은 빈칸이 맞았음
 				}
 			}
@@ -211,27 +213,60 @@ public class Board extends JPanel {//JPanel 상속
 		//근데 +1은 도저히 이해불가
 		g.setColor(color.brighter());//밝음으로 하고 밑에 두줄 긋고 어두움으로 아래 두줄 긋는듯.
 		g.drawLine(x, y +squareHeight()-1, x, y);
-		g.drawLine(x,y,x+squareWidth()-1,y);
+		g.drawLine(x,y,x+squareWidth()-1,y);//위랑 왼쪽 라인은 밝게,
 		
-		g.setColor(color.darker());
+		g.setColor(color.darker());//오른쪽, 아래 라인은 어둡게(그림자처럼)
 		g.drawLine(x+1,y+squareHeight()-1,
 				x+squareWidth()-1,y+squareHeight()-1);
 		g.drawLine(x+squareWidth()-1, y+squareHeight()-1,
 				x+squareWidth()-1, y+1);
 	}//주석 추후작성
 	
+	private class GameCycle implements ActionListener{
+		@Override
+		public void actionPerformed(ActionEvent e) {
+			doGameCycle();
+		}
+	}
 	
+	private void doGameCycle() {
+		update();
+		repaint();
+	}
+	private void update() {
+		if(isPaused) {
+			return;
+		}//퍼즈 상태면 암것도 안함
+		if(isFallingFinished) {
+			//폴링이 끝난 상태면
+			isFallingFinished = false;
+			newPiece();//새 피스만들고 폴링 안끝남으로 되돌림
+		} else {
+			oneLineDown();//폴링중이면 한칸 내림. 
+		}//이름 그대로 틱마다 업데이트 해주는 건듯.
+	}
 	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
+	class TAdapter extends KeyAdapter{
+		
+		@Override
+		public void keyPressed(KeyEvent e) {
+			if (curPiece.getShape() == Tetrominoe.NoShape) {
+				return;
+			}
+			int keycode = e.getKeyCode();
+			
+			//Java12 switch expressions - 원문에 이렇게 적혀있는거임
+			switch(keycode) {
+			
+			case KeyEvent.VK_P -> pause();
+			case KeyEvent.VK_LEFT -> tryMove(curPiece, curX-1, curY);
+			case KeyEvent.VK_RIGHT -> tryMove(curPiece, curX+1, curY);
+			case KeyEvent.VK_DOWN -> tryMove(curPiece.rotateRight(), curX,curY);
+			case KeyEvent.VK_UP -> tryMove(curPiece.rotateLeft(), curX,curY);
+			//piece입력값에 커피스의 돌린 새로운 도형을 입력하는 방식.
+			case KeyEvent.VK_SPACE -> dropDown();
+			case KeyEvent.VK_D -> oneLineDown();//이건 그냥 d키 말하는거 맞나?
+			}
+		}
+	}
 }
